@@ -97,10 +97,49 @@ the trees says so.
 Like in the paper, every block of a packed executable is labelled packed for
 training, and every block of a not packed executable not packed.
 
-## Default model
+## Shipped models
 
-The model shipped with BinStat (`binstat.DEFAULT_MODEL`) is trained and
-evaluated with the protocol of the paper, by
+BinStat ships one model per executable format, in its `models` folder, named
+after the format (`binstat.MODELS` maps these names to their paths):
+`pe.json` and `elf.json`.
+
+When no model is given (`--model`), BinStat reads the magic bytes of each
+executable:
+
+- an **ELF** executable (`\x7fELF`) is analyzed with the ELF model, as a
+  debug message says (shown with `-v`);
+- **any other file** is analyzed with the PE model, the default one
+  (`binstat.DEFAULT_MODEL`).
+
+A given model is used for every file. As each shipped model was trained on
+one format only, using it (by default, or with `--model pe` or
+`--model elf`) on a file of another format gives a warning:
+
+```console
+$ binstat detect /bin/bash -v
+DEBUG:binstat:/bin/bash is an ELF executable, using the ELF model (no model given)
+DEBUG:binstat:508/1413 blocks recognized as packed (35.95%, threshold: 50.00%)
+False
+$ binstat detect /bin/bash --model pe
+WARNING:binstat:/bin/bash is not a Portable Executable, while the model was trained on PE files
+False
+$ binstat detect program.exe --model elf
+WARNING:binstat:program.exe is not an ELF executable, while the model was trained on ELF files
+True
+```
+
+The last result shows why: the ELF model classifies 54% of the blocks of this
+not packed PE file (`tests/hello.exe`) as packed, where the PE model
+classifies 10%.
+
+The format comes from the magic bytes: `\x7fELF` for ELF, and `MZ` followed
+by `PE\0\0` at the offset given at 0x3c for PE (see `executable_format` in
+the [Python API](api.md#executable_format)). Models that are not shipped
+with BinStat never warn.
+
+### PE model
+
+The PE model is trained and evaluated with the protocol of the paper, by
 `scripts/train-default-model.py` (see [Contributing](contributing.md)), on
 the [packed PE dataset](https://github.com/packing-box/dataset-packed-pe),
 whose packed samples are packed versions of its not packed ones:
@@ -136,11 +175,24 @@ quarter of its blocks classified as packed (the paper reports 6.5% to
 training. The only misclassified executables are two FSG-packed ones, where
 the paper has one CExe-packed executable.
 
+### ELF model
+
+The ELF model is trained with `binstat train` on the whole
+[packed ELF dataset](https://github.com/packing-box/dataset-packed-elf): its
+not packed executables, and their versions packed by **ezuri, gzexe,
+midgetpack, pakkero, UPX and ward**. It uses the settings of the PE model
+(unigrams, blocks of 1024 bytes, `λ = 3`, 30 boosting trials, trees of at
+most 700 leaves, no class weighting), with seed 42. As no executable was
+kept for testing, it has no evaluation like the PE model's.
+
 ## Limitations
 
-- The default model was trained on **PE** files only. The method does not
-  parse the executable, so it accepts any file, but ELF or Mach-O files need
-  a model trained on them (`binstat train`).
+- Only PE and ELF executables have a model of their own: unless another
+  model is given, every file that is not ELF is analyzed with the PE model
+  (hence the warning above). The method does not parse the executable, so it accepts
+  any file, but its results are only reliable with a model trained on the
+  same format (`--model elf`, or `binstat train`, see
+  [Contributing](contributing.md#adding-a-model-for-another-format)).
 - Any high-entropy content counts: a not packed executable with large
   compressed resources or overlay (installers, self-extracting archives,
   embedded images) can be reported as packed.

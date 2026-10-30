@@ -13,7 +13,7 @@
 
 BinStat is an implementation of [this paper](https://doi.org/10.5769/J201101003) into a Python package with a console script to detect whether an executable is packed, using statistics on the n-grams of its blocks and boosted decision trees.
 
-A model trained on PE files is included ; [scikit-learn](https://scikit-learn.org) is only needed for training your own models.
+Models trained on PE (the default one) and ELF (used for ELF executables) files are included ; [scikit-learn](https://scikit-learn.org) is only needed for training your own models.
 
 ```session
 $ pip install binstat

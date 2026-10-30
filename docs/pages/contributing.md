@@ -27,10 +27,11 @@ Dependencies are monitored by Dependabot and audited with
 (`.github/workflows/security.yml`), on every push and pull request to `main`
 and weekly.
 
-## Training the default model
+## Training the PE model
 
-The default model is `src/binstat/model.json` (see
-[Default model](internals.md#default-model)). It is trained with the protocol
+The shipped models are in `src/binstat/models/`, one per executable format,
+named after it (see [Shipped models](internals.md#shipped-models)). The PE
+model, `pe.json`, is also the default one. It is trained with the protocol
 of the paper on the
 [packed PE dataset](https://github.com/packing-box/dataset-packed-pe), and
 evaluated like in the paper, by:
@@ -41,11 +42,17 @@ $ python3 scripts/train-default-model.py dataset-packed-pe
 ```
 
 The script draws the test executables with a fixed seed, so it rebuilds the
-same model. Keep any change of the default model in line with the paper, and
-evaluate it on executables that were not used for training. The
-[packed ELF dataset](https://github.com/packing-box/dataset-packed-elf) and
-[Docker Packing Box](https://github.com/packing-box/docker-packing-box) help
+same model. Keep any change of the PE model in line with the paper, and
+evaluate it on executables that were not used for training.
+[Docker Packing Box](https://github.com/packing-box/docker-packing-box) helps
 with this.
+
+## Adding a model for another format
+
+`binstat train` the model on executables of that format, and save it in
+`src/binstat/models/` under the name of the format (`macho.json` for
+Mach-O): `--model macho` (or `BinStat("macho")`) then uses it. The PE model
+stays the default one.
 
 ## Development setup
 

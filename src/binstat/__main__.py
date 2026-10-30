@@ -7,7 +7,7 @@ from os.path import exists
 from time import perf_counter
 
 from .__info__ import __author__, __copyright__, __license__, __reference__, __source__, __version__
-from .__init__ import BinStat, BLOCK_SIZE, MINKOWSKI_ORDER, NGRAMS, THRESHOLD, file_features
+from .__init__ import BinStat, BLOCK_SIZE, MINKOWSKI_ORDER, MODELS, NGRAMS, THRESHOLD, file_features
 
 
 def valid_file(path):
@@ -72,6 +72,7 @@ def main():
     examples = "usage examples:\n- " + "\n- ".join([
         "binstat detect program.exe",
         "binstat detect program.exe --threshold 0.6 --ratio",
+        "binstat detect program --model elf",
         "binstat features program.exe --label yes",
         "binstat train -p packed/ -n not-packed/ -o model.json --max-blocks 100",
     ])
@@ -86,7 +87,9 @@ def main():
     cmd = lambda name, help: sparsers.add_parser(name, help=help, description=help, parents=[common])
     detect = cmd("detect", "detect whether an executable is packed")
     detect.add_argument("path", type=valid_file, help="path to the executable file")
-    detect.add_argument("-m", "--model", help="path to a JSON model (default: the model shipped with BinStat)")
+    detect.add_argument("-m", "--model", help="path to a JSON model, or name of a shipped model (%s) (default: elf for ELF "
+                        "executables, otherwise pe ; a shipped model warns about files of another format)" %
+                        ", ".join(MODELS))
     detect.add_argument("-r", "--ratio", action="store_true",
                         help="output the ratio of packed blocks instead of the decision")
     detect.add_argument("-t", "--threshold", type=Positive(float, int, maximum=1), default=THRESHOLD,

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: UTF-8 -*-
-"""Train the default model of BinStat with the protocol of the paper, and evaluate it like the paper does.
+"""Train the PE model of BinStat (its default one) with the protocol of the paper, and evaluate it like the paper does.
 
 The paper trains on 456 not packed executables and their versions packed with 7 packers, then tests on 22 other
  executables and their packed versions, including a packer unseen during training (Themida). This script applies the

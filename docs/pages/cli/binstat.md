@@ -25,7 +25,7 @@ $ binstat detect [-h] [-b] [-v] [-m MODEL] [-r] [-t THRESHOLD] path
 | Argument | Default | Description |
 |---|---|---|
 | `path` | | The executable to analyze. It must exist. |
-| `-m`, `--model MODEL` | the [default model](../internals.md#default-model) | Path to a JSON model made with `binstat train`. |
+| `-m`, `--model MODEL` | `elf` for ELF executables, otherwise `pe` (see [shipped models](../internals.md#shipped-models)) | Path to a JSON model made with `binstat train`, or name of a shipped model (`elf`, `pe`). A shipped model warns about files of another format (e.g. a PE file with `elf`). |
 | `-r`, `--ratio` | | Print the ratio of packed blocks (0 to 1) instead of the decision. |
 | `-t`, `--threshold T` | 0.5 | Report the file as packed when at least this ratio of its blocks is classified as packed. |
 

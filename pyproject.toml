@@ -22,7 +22,7 @@ version = {attr = "binstat.__info__.__version__"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-"*" = ["*.json", "*.txt"]
+"*" = ["*.json", "*.txt", "models/*.json"]
 
 [project]
 name = "binstat"

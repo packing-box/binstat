@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import numpy as np
 import os
+import warnings
 
 from .features import *
 from .features import __all__ as _features
@@ -8,11 +9,36 @@ from .model import *
 from .model import __all__ as _model
 
 
-__all__ = ["BinStat", "DEFAULT_MODEL", "THRESHOLD"] + _features + _model
+__all__ = ["BinStat", "DEFAULT_MODEL", "MODELS", "THRESHOLD", "executable_format"] + _features + _model
 
 
-DEFAULT_MODEL = os.path.join(os.path.dirname(__file__), "model.json")
+# shipped models, named after the executable format they were trained on (e.g. models/elf.json for ELF)
+MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
+MODELS = {os.path.splitext(f)[0]: os.path.join(MODELS_DIR, f) for f in sorted(os.listdir(MODELS_DIR))
+          if f.endswith(".json")}
+# model used unless another one is given, whatever the executable format
+DEFAULT_MODEL = MODELS["pe"]
 THRESHOLD = .5
+# executable formats: (short name, article and full name), for the warnings about models of another format
+FORMATS = {'elf': ("ELF", "an ELF executable"), 'macho': ("Mach-O", "a Mach-O executable"),
+           'pe': ("PE", "a Portable Executable")}
+MACHO_MAGICS = (b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe")
+
+
+def executable_format(executable):
+    """ Detect the format of the input executable from its magic bytes: "elf", "macho", "pe" or None (unknown). """
+    with open(str(executable), "rb") as f:
+        head = f.read(64)
+        if head[:4] == b"\x7fELF":
+            return "elf"
+        # universal binaries share their magic with Java classes, whose version (>= 45) is where the number of
+        #  architectures is
+        if head[:4] in MACHO_MAGICS or head[:4] == b"\xca\xfe\xba\xbe" and 0 < int.from_bytes(head[4:8], "big") < 45:
+            return "macho"
+        if head[:2] == b"MZ" and len(head) == 64:
+            f.seek(int.from_bytes(head[60:64], "little"))
+            if f.read(4) == b"PE\0\0":
+                return "pe"
 
 
 def _files(*paths):
@@ -30,17 +56,43 @@ def _files(*paths):
 
 class BinStat:
     def __init__(self, model=None, threshold=THRESHOLD, logger=None, **kwargs):
-        """ Configure the detector with a model (Model instance or path to a JSON model ; None for the default one)
-             and the minimum ratio of packed blocks for an executable to be packed. """
+        """ Configure the detector with a model (Model instance, path to a JSON model or name of a shipped model ;
+             None for the default one, i.e. the PE model, or the ELF model for ELF executables) and the minimum ratio of
+             packed blocks for an executable to be packed. """
         if not 0. <= threshold <= 1.:
             raise ValueError("threshold must be between 0 and 1")
-        self.model = model if isinstance(model, Model) else Model.load(model or DEFAULT_MODEL)
+        # without a given model, ELF executables get the ELF model (loaded on first use)
+        self._default, self._elf_model = model is None, None
+        if isinstance(model, Model):
+            self.model, self._format = model, None
+        else:
+            path = str(model or DEFAULT_MODEL)
+            path = path if os.path.isfile(path) else MODELS.get(path, path)
+            self.model = Model.load(path)
+            # a shipped model, whether by default, by name or by path, is only meant for the format it is named after
+            self._format = {os.path.realpath(p): name for name, p in MODELS.items()}.get(os.path.realpath(path))
         self.threshold = threshold
         self.logger = logger
 
     def blocks(self, executable):
         """ Classify each block of the input executable (1 = packed, 0 = not packed). """
-        return self.model.predict(file_features(str(executable), **self.model.features_kwargs))
+        model, model_fmt = self.model, self._format
+        fmt = executable_format(executable) if model_fmt else None
+        if self._default and fmt == "elf":
+            if self._elf_model is None:
+                self._elf_model = Model.load(MODELS["elf"])
+            model, model_fmt = self._elf_model, "elf"
+            if self.logger:
+                self.logger.debug(f"{executable} is an ELF executable, using the ELF model (no model given)")
+        X = file_features(str(executable), **model.features_kwargs)
+        if len(X) > 0 and model_fmt and fmt != model_fmt:
+            short, full = FORMATS.get(model_fmt, (model_fmt, f"a {model_fmt} executable"))
+            msg = f"{executable} is not {full}, while the model was trained on {short} files"
+            if self.logger:
+                self.logger.warning(msg)
+            else:
+                warnings.warn(msg, stacklevel=2)
+        return model.predict(X)
 
     def detect(self, executable):
         """ Analyze the input executable file: it is packed when the ratio of its packed blocks reaches the

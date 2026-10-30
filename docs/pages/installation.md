@@ -18,7 +18,7 @@ The package is published on PyPI as **`binstat`**:
 $ pip install binstat
 ```
 
-This installs the `binstat` Python package, its default model and the
+This installs the `binstat` Python package, its models and the
 `binstat` console script. Detection only needs numpy.
 
 To also train your own models:

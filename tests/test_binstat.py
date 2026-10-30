@@ -157,11 +157,79 @@ class TestBinStat(TestCase):
     def test_default_model(self):
         b = BinStat()
         self.assertFalse(b.detect(PE))
-        self.assertTrue(b.detect(self.random))
-        self.assertEqual(b.ratio(self.random), 1.)
+        with self.assertWarnsRegex(UserWarning, r"random\.bin is not a Portable Executable"):
+            self.assertTrue(b.detect(self.random))
+        with self.assertWarns(UserWarning):
+            self.assertEqual(b.ratio(self.random), 1.)
         self.assertEqual(len(b.blocks(PE)), (os.path.getsize(PE) - 1) // 1024 + 1)
         self.assertTrue(BinStat(threshold=0.).detect(PE))
-        self.assertTrue(BinStat(DEFAULT_MODEL, logger=LOGGER).detect(self.random))
+        with self.assertLogs(LOGGER, "WARNING"):
+            self.assertTrue(BinStat(DEFAULT_MODEL, logger=LOGGER).detect(self.random))
+
+    def test_executable_format(self):
+        self.assertEqual(executable_format(PE), "pe")
+        self.assertIsNone(executable_format(self.random))
+        self.assertIsNone(executable_format(self.empty))
+        self.assertRaises(OSError, executable_format, os.path.join(self.tmp.name, "missing"))
+        for header, fmt in [(b"\x7fELF\x02\x01\x01", "elf"), (b"\xcf\xfa\xed\xfe\x07\x00\x00\x01", "macho"),
+                            (b"\xfe\xed\xfa\xce\x00\x00\x00\x07", "macho"), (b"\xca\xfe\xba\xbe\x00\x00\x00\x02", "macho"),
+                            # Java class (version 52), DOS executable (no PE header), and truncated MZ header
+                            (b"\xca\xfe\xba\xbe\x00\x00\x00\x34", None), (b"MZ" + bytes(62), None), (b"MZ\x90\x00", None)]:
+            path = os.path.join(self.tmp.name, "header.bin")
+            with open(path, "wb") as f:
+                f.write(header + bytes(100))
+            self.assertEqual(executable_format(path), fmt, header)
+
+    def test_model_selection(self):
+        self.assertEqual(set(MODELS), {"elf", "pe"})
+        self.assertEqual(DEFAULT_MODEL, MODELS["pe"])
+        elf = os.path.join(self.tmp.name, "program.elf")
+        with open(elf, "wb") as f:
+            f.write(b"\x7fELF" + Random(1).randbytes(20 * 1024))
+        pe = Model.load(MODELS["pe"]).to_dict()
+        # without a given model, ELF executables get the ELF model, saying so in a debug message
+        b = BinStat(logger=LOGGER)
+        self.assertEqual(b.model.to_dict(), pe)
+        with self.assertLogs(LOGGER, "DEBUG") as logs:
+            self.assertEqual(b.ratio(elf), BinStat("elf").ratio(elf))
+        self.assertEqual(logs.output[0], f"DEBUG:{LOGGER.name}:{elf} is an ELF executable, using the ELF model (no "
+                                         f"model given)")
+        self.assertFalse(any(log.startswith("WARNING") for log in logs.output))
+        self.assertEqual(b._elf_model.to_dict(), Model.load(MODELS["elf"]).to_dict())
+        elf_model = b._elf_model
+        b.detect(elf)
+        self.assertIs(b._elf_model, elf_model)
+        # the PE model, by default for other formats, or by name or path for any one, warns about non-PE files
+        for model, path in [(None, self.random), ("pe", elf), (MODELS["pe"], elf), (os.path.relpath(MODELS["pe"]), elf)]:
+            b = BinStat(model, logger=LOGGER)
+            self.assertEqual(b.model.to_dict(), pe)
+            with self.assertLogs(LOGGER, "WARNING") as logs:
+                b.detect(path)
+            self.assertEqual(logs.output, [f"WARNING:{LOGGER.name}:{path} is not a Portable Executable, while the "
+                                           f"model was trained on PE files"])
+            with self.assertNoLogs(LOGGER, "WARNING"):
+                b.detect(PE)
+            self.assertIsNone(b._elf_model)
+        # the ELF model, by name or path, warns about files that are not ELF
+        for model in ["elf", MODELS["elf"]]:
+            b = BinStat(model, logger=LOGGER)
+            with self.assertNoLogs(LOGGER, "WARNING"):
+                self.assertTrue(b.detect(elf))
+            for path in [PE, self.random]:
+                with self.assertLogs(LOGGER, "WARNING") as logs:
+                    b.detect(path)
+                self.assertEqual(logs.output, [f"WARNING:{LOGGER.name}:{path} is not an ELF executable, while the "
+                                               f"model was trained on ELF files"])
+        with self.assertWarnsRegex(UserWarning, r"hello\.exe is not an ELF executable"):
+            BinStat("elf").detect(PE)
+        # models given as Model instances, whose format is unknown, never warn
+        for model in [Model.load(MODELS["elf"]), Model.load(MODELS["pe"])]:
+            b = BinStat(model, logger=LOGGER)
+            with self.assertNoLogs(LOGGER, "WARNING"):
+                self.assertTrue(b.detect(elf))
+                b.detect(PE)
+        self.assertNotEqual(BinStat("elf").model.to_dict(), pe)
+        self.assertRaises(OSError, BinStat, "missing-model")
 
     def test_errors(self):
         self.assertRaises(ValueError, BinStat, threshold=1.5)
@@ -209,6 +277,22 @@ class TestCli(TestCase):
         self.assertLess(float(out[0]), .5)
         self.assertEqual(len(out), 2)
         self.assertEqual(self._main("detect", PE, "--model", PE), (1, []))
+        self.assertEqual(self._main("detect", PE, "--model", "pe"), (0, ["False"]))
+        with TemporaryDirectory() as tmp:
+            elf = os.path.join(tmp, "program")
+            with open(elf, "wb") as f:
+                f.write(b"\x7fELF" + Random(1).randbytes(20 * 1024))
+            with self.assertLogs("binstat", "DEBUG") as logs:
+                self.assertEqual(self._main("detect", elf, "-v"), (0, ["True"]))
+            self.assertIn("is an ELF executable, using the ELF model (no model given)", logs.output[0])
+            with self.assertLogs("binstat", "WARNING") as logs:
+                self.assertEqual(self._main("detect", elf, "-m", "pe"), (0, ["True"]))
+            self.assertIn("is not a Portable Executable", logs.output[0])
+            with self.assertNoLogs("binstat", "WARNING"):
+                self.assertEqual(self._main("detect", elf, "-m", "elf"), (0, ["True"]))
+            with self.assertLogs("binstat", "WARNING") as logs:
+                self.assertEqual(self._main("detect", PE, "-m", "elf")[0], 0)
+            self.assertIn("is not an ELF executable, while the model was trained on ELF files", logs.output[0])
         with self.assertRaises(SystemExit):
             self._main("detect", PE, "-t", "2")
 

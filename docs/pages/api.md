@@ -19,7 +19,7 @@ Configures a detector. One instance can analyze many files.
 
 | Parameter | Type | Description |
 |---|---|---|
-| `model` | `Model`, `str` or `None` | Model, or path to a JSON model. `None` uses the [default model](internals.md#default-model) (`binstat.DEFAULT_MODEL`). |
+| `model` | `Model`, `str` or `None` | Model, path to a JSON model, or name of a [shipped model](internals.md#shipped-models) (a key of `binstat.MODELS`: `"elf"`, `"pe"`). `None` uses the ELF model for ELF executables (logging a debug message when a `logger` is set), and the default model (`binstat.DEFAULT_MODEL`, the PE model) for any other file. A shipped model, given in any way but as a `Model`, warns about files of another format. |
 | `threshold` | `float` | Minimum ratio of packed blocks, from 0 to 1, for an executable to be packed. The paper uses 0.5. |
 | `logger` | `logging.Logger` | Optional logger. When set, errors are logged and `detect` and `ratio` return `"?"`. Otherwise, errors raise exceptions. |
 | `**kwargs` | | Ignored. It lets you pass `vars(args)` from an argument parser. |
@@ -63,6 +63,22 @@ BinStat.blocks(executable)
 
 Returns the class of each block as a numpy array: `1` for packed, `0` for not
 packed. Errors are raised, whatever the `logger`.
+
+Without a given model, an ELF executable is classified with the ELF model.
+With a shipped model, it warns about a file of another format than the
+model's (and that has blocks to classify): through the `logger` when one is set,
+otherwise with a `UserWarning`. `detect` and `ratio` rely on it, so they warn
+the same way.
+
+### `executable_format`
+
+```python
+executable_format(executable)
+```
+
+Detects the format of an executable from its magic bytes: `"elf"`,
+`"macho"`, `"pe"`, or `None` when it is none of them (a DOS executable
+without a PE header is `None`). Raises `OSError` if the file cannot be read.
 
 ### `train`
 
@@ -155,7 +171,8 @@ from binstat import BinStat
 
 detector = BinStat(threshold=0.6, logger=logging.getLogger("binstat"))
 
-for path in ["a.exe", "b.exe", "empty.bin"]:
+# b.elf is analyzed with the ELF model, the others with the PE model, which warns about c.bin (not a PE)
+for path in ["a.exe", "b.elf", "c.bin", "empty.bin"]:
     print(path, detector.detect(path), detector.ratio(path))
 ```
 

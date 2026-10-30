@@ -20,9 +20,12 @@ as a Python package with a console script.
   statistical and information theory measures on each block of 1024 bytes,
   boosted decision trees classifying the blocks, and an executable is packed
   when at least half of its blocks are.
-- **A default model** trained with the protocol of the paper, on PE files, with
-  [results close to the paper's](internals.md#default-model).
-- **Trainable**: build your own models, for instance for ELF files, with
+- **Models for PE and ELF files**, ELF executables getting the ELF model
+  unless another model is given. The PE model, used by default, is trained
+  with the protocol of the paper, with
+  [results close to the paper's](internals.md#pe-model). Each model warns
+  about files of another format.
+- **Trainable**: build your own models, for instance for Mach-O files, with
   bigrams to four-grams.
 - **Light**: detection only needs numpy; models are plain JSON.
 - **A command-line tool**, [`binstat`](cli/binstat.md), and a
