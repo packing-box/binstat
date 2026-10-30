@@ -2,7 +2,7 @@ site_author: dhondta
 site_name: BinStat
 site_description: Detect packed executables with statistics on the n-grams of their blocks and boosted decision trees
 site_url: https://binstat.readthedocs.io
-repo_url: https://github.com/dhondta/binstat
+repo_url: https://github.com/packing-box/binstat
 edit_uri: edit/main/docs/pages/
 copyright: Copyright &copy; 2026 Alexandre D'Hondt
 docs_dir: pages

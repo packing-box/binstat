@@ -1,12 +1,13 @@
-<p align="center"><img src="https://github.com/dhondta/binstat/raw/main/docs/pages/img/logo.png"></p>
-<h1 align="center">BinStat <a href="https://twitter.com/intent/tweet?text=BinStat%20-%20Packing%20detector%20using%20statistics%20on%20byte%20n-grams%20and%20boosted%20decision%20trees.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fbinstat%0D%0A&hashtags=python,packer,packingdetection,machinelearning"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
+<p align="center"><img src="https://github.com/packing-box/binstat/raw/main/docs/pages/img/logo.png"></p>
+<h1 align="center">BinStat <a href="https://twitter.com/intent/tweet?text=BinStat%20-%20Packing%20detector%20using%20statistics%20on%20byte%20n-grams%20and%20boosted%20decision%20trees.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fpacking-box%2fbinstat%0D%0A&hashtags=python,packer,packingdetection,machinelearning"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
 <h3 align="center">Detect packed executables using statistics on the n-grams of their blocks and boosted decision trees.</h3>
 
 [![PyPi](https://img.shields.io/pypi/v/binstat.svg)](https://pypi.python.org/pypi/binstat/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/binstat.svg)](https://pypi.python.org/pypi/binstat/)
-[![Build Status](https://github.com/dhondta/binstat/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/binstat/actions/workflows/python-package.yml)
-[![Security](https://github.com/dhondta/binstat/actions/workflows/security.yml/badge.svg)](https://github.com/dhondta/binstat/actions/workflows/security.yml)
-[![Coverage Status](https://raw.githubusercontent.com/dhondta/binstat/coverage-badge/docs/coverage.svg)](#)
+[![Read The Docs](https://readthedocs.org/projects/binstat/badge/?version=latest)](https://binstat.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://github.com/packing-box/binstat/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/binstat/actions/workflows/python-package.yml)
+[![Security](https://github.com/packing-box/binstat/actions/workflows/security.yml/badge.svg)](https://github.com/packing-box/binstat/actions/workflows/security.yml)
+[![Coverage Status](https://raw.githubusercontent.com/packing-box/binstat/coverage-badge/docs/coverage.svg)](#)
 [![License](https://img.shields.io/pypi/l/binstat.svg)](https://pypi.python.org/pypi/binstat/)
 
 

@@ -28,7 +28,7 @@ $ pip install binstat[train]
 ## From source
 
 ```console
-$ git clone https://github.com/dhondta/binstat
+$ git clone https://github.com/packing-box/binstat
 $ cd binstat
 $ pip install .
 ```

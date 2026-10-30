@@ -8,7 +8,7 @@ Only the latest release of BinStat (`binstat` on [PyPI](https://pypi.org/project
 
 Please do **not** report security vulnerabilities through public GitHub issues.
 
-Instead, report them privately through [GitHub's private vulnerability reporting](https://github.com/dhondta/binstat/security/advisories/new) (the repository's *Security* tab, then *Report a vulnerability*). Please include:
+Instead, report them privately through [GitHub's private vulnerability reporting](https://github.com/packing-box/binstat/security/advisories/new) (the repository's *Security* tab, then *Report a vulnerability*). Please include:
 
 - the BinStat, numpy and (for training) scikit-learn versions;
 - the steps to reproduce the issue, and a sample (or its hash) if relevant;

@@ -10,8 +10,8 @@ as a Python package with a console script.
 
 [![PyPi](https://img.shields.io/pypi/v/binstat.svg)](https://pypi.python.org/pypi/binstat/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/binstat.svg)](https://pypi.python.org/pypi/binstat/)
-[![Build Status](https://github.com/dhondta/binstat/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/binstat/actions/workflows/python-package.yml)
-[![Security](https://github.com/dhondta/binstat/actions/workflows/security.yml/badge.svg)](https://github.com/dhondta/binstat/actions/workflows/security.yml)
+[![Build Status](https://github.com/packing-box/binstat/actions/workflows/python-package.yml/badge.svg)](https://github.com/packing-box/binstat/actions/workflows/python-package.yml)
+[![Security](https://github.com/packing-box/binstat/actions/workflows/security.yml/badge.svg)](https://github.com/packing-box/binstat/actions/workflows/security.yml)
 [![License](https://img.shields.io/pypi/l/binstat.svg)](https://pypi.python.org/pypi/binstat/)
 
 ## Features

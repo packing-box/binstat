@@ -6,7 +6,7 @@ negative reports**.
 
 ## Reporting issues
 
-Open an issue on [GitHub](https://github.com/dhondta/binstat/issues) and
+Open an issue on [GitHub](https://github.com/packing-box/binstat/issues) and
 include:
 
 - the BinStat and numpy versions (`binstat --help` prints the former,
@@ -18,7 +18,7 @@ include:
 ## Security
 
 Please do **not** report vulnerabilities in public issues. See the
-[security policy](https://github.com/dhondta/binstat/blob/main/SECURITY.md):
+[security policy](https://github.com/packing-box/binstat/blob/main/SECURITY.md):
 report them privately through the repository's *Security* tab
 (*Report a vulnerability*).
 
@@ -50,7 +50,7 @@ with this.
 ## Development setup
 
 ```console
-$ git clone https://github.com/dhondta/binstat
+$ git clone https://github.com/packing-box/binstat
 $ cd binstat
 $ pip install -e .[train]
 $ pip install flake8 pytest pytest-cov
