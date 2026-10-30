@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=70.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+source = ["binstat"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+  'pragma: no cover',
+  'if.*?__name__.*?==.*?.__main__.:',
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "binstat.__info__.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.txt"]
+
+[project]
+name = "binstat"
+authors = [
+  {name="Alexandre D'Hondt", email="alexandre.dhondt@gmail.com"},
+]
+description = "Implementation of the packing detection method from the paper \"BinStat - Tool for Recognition of Packed Executables\" of Park et al."
+license = {file = "LICENSE"}
+keywords = ["packing", "packed-executable", "packing-detection", "n-grams", "decision-tree"]
+requires-python = ">=3.10,<4"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Information Technology",
+  "Intended Audience :: Other Audience",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Security",
+]
+dependencies = [
+  "numpy>=1.24",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+train = [
+  # 1.6 is the first version boosting with SAMME by default (and only), which Model.predict implements
+  "scikit-learn>=1.6",
+]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+documentation = "https://binstat.readthedocs.io/en/latest/?badge=latest"
+homepage = "https://github.com/packing-box/binstat"
+issues = "https://github.com/packing-box/binstat/issues"
+repository = "https://github.com/packing-box/binstat"
+
+[project.scripts]
+binstat = "binstat.__main__:main"
