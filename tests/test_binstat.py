@@ -186,6 +186,13 @@ class TestBinStat(TestCase):
             self.assertTrue(b.detect(os.path.join(tmp, "packed", "sub", "p0")))
             self.assertFalse(b.detect(os.path.join(tmp, "not-packed", "n0")))
             self.assertRaises(ValueError, BinStat.train, [], [os.path.join(tmp, "not-packed")])
+            # non-finite measures, e.g. from a numpy build that does not support the running Python version
+            F = np.zeros((4, len(FEATURES)))
+            F[2, FEATURES.index("jensen_shannon")] = np.inf
+            with patch("binstat.file_features", return_value=F):
+                with self.assertRaisesRegex(ValueError, r"p0: non-finite jensen_shannon in 1 block\(s\), starting "
+                                                        r"with block 2"):
+                    BinStat.train([os.path.join(tmp, "packed")], [os.path.join(tmp, "not-packed")], boost=3)
 
 
 class TestCli(TestCase):

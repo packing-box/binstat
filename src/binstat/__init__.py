@@ -84,6 +84,7 @@ class BinStat:
                             the others)
         :param max_blocks: maximum number of blocks taken (at random) from each executable (None for all)
         :return:           BinStat instance (its model can be saved with .model.save(path))
+        :raise ValueError: if a measure of an executable is not finite
         """
         fkw = {'ngram': ngram, 'block_size': block_size, 'minkowski_order': minkowski_order}
         rng, X, y = np.random.default_rng(seed), [], []
@@ -95,6 +96,13 @@ class BinStat:
                     if logger:
                         logger.warning(f"{path}: {e.strerror or e}")
                     continue
+                # fail early with the culprit rather than with scikit-learn's error on the whole training set
+                bad = ~np.isfinite(F)
+                if bad.any():
+                    blocks, features = np.nonzero(bad)
+                    raise ValueError(f"{path}: non-finite {', '.join(FEATURES[i] for i in sorted(set(features)))} "
+                                     f"in {len(set(blocks))} block(s), starting with block {blocks.min()} (check "
+                                     f"that numpy supports this Python version)")
                 if max_blocks is not None and len(F) > max_blocks:
                     F = F[np.sort(rng.choice(len(F), max_blocks, replace=False))]
                 X.append(F)

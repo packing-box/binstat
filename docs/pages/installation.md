@@ -3,8 +3,10 @@
 ## Requirements
 
 - Python **3.10 or later**. CI runs on 3.10 to 3.13.
-- [`numpy`](https://pypi.org/project/numpy/) (1.24 or later), which pip
-  installs automatically.
+- [`numpy`](https://pypi.org/project/numpy/) (1.24 or later; 2.1 or later on
+  Python 3.13, 2.3.2 or later on Python 3.14), which pip installs
+  automatically. Older numpy versions have no release for these Python
+  versions and, built from source, can compute wrong measures.
 - For training models only: [`scikit-learn`](https://pypi.org/project/scikit-learn/)
   (1.6 or later), installed with the `train` extra.
 

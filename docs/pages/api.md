@@ -87,6 +87,10 @@ scikit-learn (`pip install binstat[train]`).
 Files that cannot be read are skipped (with a warning when a `logger` is
 set). Save the model with `detector.model.save("model.json")`.
 
+**Raises** `ValueError`, naming the file, the measures and the first block
+concerned, when a measure of an executable is not finite (for instance with
+a numpy build that does not support the running Python version).
+
 ---
 
 ## Statistical module
