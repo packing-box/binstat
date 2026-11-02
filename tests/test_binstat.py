@@ -296,6 +296,15 @@ class TestCli(TestCase):
         with self.assertRaises(SystemExit):
             self._main("detect", PE, "-t", "2")
 
+    def test_version(self):
+        from binstat.__info__ import __version__
+        out = StringIO()
+        with patch.object(sys, "argv", ["binstat", "--version"]), redirect_stdout(out), \
+             self.assertRaises(SystemExit) as e:
+            main()
+        self.assertEqual(e.exception.code, 0)
+        self.assertEqual(out.getvalue().strip(), f"BinStat {__version__}")
+
     def test_features(self):
         code, out = self._main("features", PE, "--label", "no", "--ngram", "2")
         self.assertEqual(code, 0)

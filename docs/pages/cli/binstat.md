@@ -5,7 +5,14 @@ to one executable, `features` prints the measures of its blocks, and `train`
 builds a model.
 
 ```console
-$ binstat [-h] {detect,features,train} ...
+$ binstat [-h] [--version] {detect,features,train} ...
+```
+
+`binstat --version` prints the version and exits:
+
+```console
+$ binstat --version
+BinStat 1.0.3
 ```
 
 The extra arguments are accepted by every command:

@@ -44,14 +44,42 @@ $ pip install -e .[train]
 ## Checking the installation
 
 ```console
+$ binstat --version
+BinStat 1.0.3
 $ binstat --help
-[...]
-BinStat 1.0.0
-[...]
+usage: binstat [-h] [--version] {detect,features,train} ...
+
+BinStat 1.0.3
+
+Author   : Alexandre D'Hondt
+Copyright: © 2026 Alexandre D'Hondt
+License  : GPLv3 (https://www.gnu.org/licenses/gpl-3.0.fr.html)
+Reference: https://doi.org/10.5769/J201101003
+Source   : https://github.com/packing-box/binstat
+
+This tool computes statistics on the n-grams of each block of an executable and classifies the blocks with boosted decision trees to determine if the executable is packed or not.
+
+positional arguments:
+  {detect,features,train}
+                        command to be executed
+    detect              detect whether an executable is packed
+    features            compute the measures of each block (in C5.0 data format)
+    train               train a model on packed and not packed executables
+
+options:
+  -h, --help            show this help message and exit
+  --version             show the version and exit
+
+usage examples:
+- binstat detect program.exe
+- binstat detect program.exe --threshold 0.6 --ratio
+- binstat detect program --model elf
+- binstat features program.exe --label yes
+- binstat train -p packed/ -n not-packed/ -o model.json --max-blocks 100
 ```
 
 ```python
 >>> from binstat.__info__ import __version__
 >>> __version__
-'1.0.0'
+'1.0.3'
 ```

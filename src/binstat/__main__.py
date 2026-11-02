@@ -77,6 +77,8 @@ def main():
         "binstat train -p packed/ -n not-packed/ -o model.json --max-blocks 100",
     ])
     parser = ArgumentParser(description=descr, epilog=examples, formatter_class=RawTextHelpFormatter)
+    parser.add_argument("--version", action="version", version="BinStat " + __version__,
+                        help="show the version and exit")
     # extra arguments are accepted after each command
     common = ArgumentParser(add_help=False)
     extra = common.add_argument_group("extra arguments")
