@@ -31,14 +31,14 @@ class Positive:
         return self._types[0](n)
 
     def __repr__(self):
-        return "positive %s" % "|".join(map(lambda x: x.__name__, self._types))
+        return f"positive {'|'.join(map(lambda x: x.__name__, self._types))}"
 
 
 def _features_args(parser):
     parser.add_argument("--block-size", type=Positive(int, zero=False), default=BLOCK_SIZE,
                         help="size of the blocks, in bytes (default: %d)" % BLOCK_SIZE)
     parser.add_argument("--minkowski-order", type=Positive(float, int, zero=False), default=MINKOWSKI_ORDER,
-                        help="order (lambda) of Minkowski's distance (default: %d)" % MINKOWSKI_ORDER)
+                        help=f"order (lambda) of Minkowski's distance (default: {MINKOWSKI_ORDER})")
     parser.add_argument("--ngram", type=int, choices=NGRAMS, default=1, help="n-gram size (default: 1)")
 
 
@@ -89,14 +89,14 @@ def main():
     cmd = lambda name, help: sparsers.add_parser(name, help=help, description=help, parents=[common])
     detect = cmd("detect", "detect whether an executable is packed")
     detect.add_argument("path", type=valid_file, help="path to the executable file")
-    detect.add_argument("-m", "--model", help="path to a JSON model, or name of a shipped model (%s) (default: elf for ELF "
-                        "executables, otherwise pe ; a shipped model warns about files of another format)" %
-                        ", ".join(MODELS))
+    detect.add_argument("-m", "--model", help=f"path to a JSON model, or name of a shipped model ({', '.join(MODELS)}) "
+                                               "(default: elf for ELF executables, otherwise pe ; a shipped model warns"
+                                               " about files of another format)")
     detect.add_argument("-r", "--ratio", action="store_true",
                         help="output the ratio of packed blocks instead of the decision")
     detect.add_argument("-t", "--threshold", type=Positive(float, int, maximum=1), default=THRESHOLD,
-                        help="minimum ratio of packed blocks for the executable to be packed (default: %.1f)" %
-                             THRESHOLD)
+                        help="minimum ratio of packed blocks for the executable to be packed "
+                             f"(default: {THRESHOLD:.1f})")
     features = cmd("features", "compute the measures of each block (in C5.0 data format)")
     features.add_argument("path", type=valid_file, help="path to the executable file")
     _features_args(features)

@@ -122,7 +122,8 @@ def _xlogy(x, y):
     """ x * log10(x / y), with 0 where x is 0. """
     out = np.zeros_like(x)
     nz = x > 0
-    out[nz] = x[nz] * np.log10(x[nz] / y[nz])
+    with np.errstate(divide="ignore"):
+        out[nz] = x[nz] * np.log10(x[nz] / y[nz])
     return out
 
 
